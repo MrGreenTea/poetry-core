@@ -246,6 +246,11 @@ class WheelBuilder(Builder):
             parse_constraint(">=2.0.0 <3.0.0")
         )
 
+    def restricts_python3(self):
+        return not self._package.python_constraint.allows_all(
+            parse_constraint(">=3.0.0")
+        )
+
     def dist_info_name(self, distribution, version):  # type: (str, str) -> str
         escaped_name = escape_name(distribution)
         escaped_version = escape_version(version)
@@ -261,6 +266,9 @@ class WheelBuilder(Builder):
             platform = "any"
             if self.supports_python2():
                 impl = "py2.py3"
+            elif self.restricts_python3():
+                min = self._package.python_constraint.min
+                impl = "py{}{}".format(min.major, min.minor)
             else:
                 impl = "py3"
 
